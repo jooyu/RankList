@@ -1,0 +1,72 @@
+<configuration debug="true">
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Save gamelog to a seperate file -->
+    <appender name="gamelog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>/webapplication/gamelog/cookierun.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>/webapplication/gamelog/cookierun.log.%d{yyyy-MM-dd}.log</fileNamePattern>
+
+            <!-- keep 30 days' worth of history -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+    
+    <appender name="runtime" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>/webapplication/runtime/cookierun.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>/webapplication/runtime/cookierun.log.%d{yyyy-MM-dd}.log</fileNamePattern>
+
+            <!-- keep 30 days' worth of history -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <!-- logback for test is not enabled -->
+    <!-- Sentry error monitoring -->
+    <!--
+    <appender name="sentry" class="net.kencochrane.raven.logback.SentryAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <dsn>
+            https://dcbd5b57183948abb5c1af6d27870227:7316f0f5b7c14261924e1659b2b9206d@app.getsentry.com/23674
+        </dsn>
+    </appender>
+    -->
+
+    <!-- Basic library log config -->
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.apache.ibatis" level="WARN"/>
+    <logger name="org.mybatis" level="WARN"/>
+    <logger name="java.sql" level="WARN"/>
+    <logger name="org.hibernate" level="WARN"/>
+
+    <!-- Utility libs -->
+    <logger name="com.notnoop.apns" level="WARN"/>
+    <logger name="com.statsd" level="WARN"/>
+
+    <!-- Main code -->
+    <logger name="com.dsky.baas.ranklist" level="INFO"/>
+
+    <!-- Gamelog config -->
+    <logger name="gamelog" level="INFO" additivity="true">
+        <appender-ref ref="gamelog"/>
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="runtime"/>
+    </root>
+</configuration>
