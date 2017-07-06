@@ -2,15 +2,14 @@ package com.dsky.baas.ranklist.util;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
@@ -218,5 +217,100 @@ public class CommonUtil {
 	        // 字符数组组合成字符串返回  
 	        return new String(resultCharArray);  
 	    }
+	    
+	    
+	    //计算两个时间点的秒数
+	    @SuppressWarnings("unused")
+		public static int expireTimeByExpireType(int createTime,int expireType)
+	    {
+	    	//换算当前时间为日期
+	    	int expireTime = 0;
+	    	Date time ;
+	    	Date timeNow ;
+	    	 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");//HH:mm:ss
+	    	 
+	    	 Calendar c = Calendar.getInstance();  
+	    	  time =c.getTime();
+	    	   c.set(Calendar.HOUR_OF_DAY,0);
+	    	     c.set(Calendar.MINUTE,0);
+	    	     c.set(Calendar.SECOND, 0);
+	    	 if(expireType==0)
+	    	 {
+	    		 expireTime = -1;
+	    		 log.debug("永不过期");
+	    	 }   
+	    	 else if(expireType==1)
+	    	{
+	    		//日    当日
+	    		 log.debug("日过期");
+	    		 c.set(Calendar.DATE,c.get(Calendar.DATE)+1);
+	    	    timeNow=c.getTime();
+	    	     expireTime=CommonUtil.parseInt(timeNow.getTime()/1000)-createTime;
+		         log.debug(time);
+		         log.debug(c.getTime());
+		         log.debug(CommonUtil.parseInt(timeNow.getTime()/1000));
+	    		 log.debug(expireTime);
+	    		
+	    	}
+	    	else if(expireType==2)
+	    	{
+	    		//周,返回当前周几  边界值
+	    		 log.debug("周过期");
+	          int weekKey= c.get(Calendar.DAY_OF_WEEK)-1;	
+	          	System.out.println(c.get(Calendar.DATE));
+	          	System.out.println(weekKey);
+	          	int dateNow=c.get(Calendar.DATE);
+		        switch (weekKey) {
+				case 0:
+				c.set(Calendar.DATE, dateNow+1);
+					break;
+	             case 1:
+	            	 c.set(Calendar.DATE, dateNow+7);
+					break;
+	             case 2:
+	            	 c.set(Calendar.DATE, dateNow+6);
+					break;
+	             case 3:
+	            	 c.set(Calendar.DATE, dateNow+5);
+					break;
+	             case 4:
+	            	 c.set(Calendar.DATE, dateNow+4);
+					break;
+	             case 5:
+	            	 c.set(Calendar.DATE, dateNow+3);
+					break;
+	             case 6:
+	            	 c.set(Calendar.DATE, dateNow+2);
+					break;
+			   }
+			    timeNow=c.getTime();
+	    	     expireTime=CommonUtil.parseInt(timeNow.getTime()/1000)-createTime;
+		         log.debug(time);
+		         log.debug(c.getTime());
+		         log.debug(CommonUtil.parseInt(timeNow.getTime()/1000));
+	    		 log.debug(expireTime);
+	    	}
+	    	else if(expireType==3)
+	    	{
+	    		//月
+	    		 log.debug("月过期");
+	    		if(Calendar.MONTH==11)
+	    		{
+	    			c.set(Calendar.MONTH,c.get(Calendar.MONTH));
+	    			c.set(Calendar.DATE,+1);
+	    			c.set(Calendar.YEAR,c.get(Calendar.YEAR)+1);
+	    		}
+	    		    c.set(Calendar.MONTH,c.get(Calendar.MONTH)+1);
+	    		    c.set(Calendar.DATE,+1);
+	    		    timeNow=c.getTime();
+		    	     expireTime=CommonUtil.parseInt(timeNow.getTime()/1000)-createTime;
+			         log.debug(time);
+			         log.debug(c.getTime());
+			         log.debug(CommonUtil.parseInt(timeNow.getTime()/1000));
+		    		 log.debug(expireTime);
+	    	}
+			return expireTime;
+
+	   }
 	
 }

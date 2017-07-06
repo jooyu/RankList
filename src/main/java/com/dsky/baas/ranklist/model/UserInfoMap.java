@@ -47,6 +47,7 @@ public class UserInfoMap {
      *
      * @mbggenerated
      */
+    private int expireTime;
     private String extend;
 
     /**
@@ -192,4 +193,12 @@ public class UserInfoMap {
     public void setExtend(String extend) {
         this.extend = extend == null ? null : extend.trim();
     }
+
+	public int getExpireTime() {
+		return expireTime;
+	}
+
+	public void setExpireTime(int expireTime) {
+		this.expireTime = expireTime;
+	}
 }

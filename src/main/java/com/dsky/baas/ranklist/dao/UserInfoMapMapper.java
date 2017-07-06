@@ -1,7 +1,5 @@
 package com.dsky.baas.ranklist.dao;
 
-import org.apache.ibatis.annotations.Mapper;
-
 import com.dsky.baas.ranklist.model.UserInfoMap;
 
 public interface UserInfoMapMapper {

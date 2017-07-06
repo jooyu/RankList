@@ -44,6 +44,21 @@ public class RedisRepository {
     public RedisRepository(RedisTemplate<String, String> redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
+    
+    
+    /**
+     * 设置键的过期时间
+     * 
+     */
+    public void setExpire(final String key,final long time)
+    {
+    	 redisTemplate.execute((RedisCallback<Long>) connection -> {
+        
+    		 connection.expire(key.getBytes(), time);
+             LOGGER.info("[redisTemplate redis]放入 缓存  url:{} ========缓存时间为{}秒", key, time);
+             return 1L;
+         });
+    }
  
     /**
      * 添加到带有 过期时间的  缓存
@@ -478,9 +493,10 @@ public class RedisRepository {
         opsForList().set(key, index, value);
     }
     
-	public void operateZset(String key, String value, Double score)
+	public void operateZsetAdd(String key, String value, int score)
 	{
-		redisTemplate.opsForZSet().add(key, value, score);
+		Double a=new Double(score);
+		redisTemplate.opsForZSet().add(key, value, a);
 	}
     
 	public int  operateZsetCount(String key, int value1, int value2)
@@ -507,5 +523,38 @@ public class RedisRepository {
 		Long arg1=new Long(value1);
 		Long arg2=new Long(value2);
 		return 	redisTemplate.opsForZSet().reverseRange(key, arg1, arg2);
+	}
+	
+	public int  operateZsetRemove(String key, Object value)
+	{
+		
+		long result=redisTemplate.opsForZSet().remove(key, value);
+		return  Integer.parseInt(String.valueOf(result)); 
+		
+	}
+	
+	
+	public int  operateZsetRank(String key, Object value)
+	{
+		
+		long result=redisTemplate.opsForZSet().rank(key, value);
+		return  Integer.parseInt(String.valueOf(result)); 
+		
+	}
+	
+	public int  operateZsetCard(String key)
+	{
+		
+		long result=redisTemplate.opsForZSet().zCard(key);
+		return  Integer.parseInt(String.valueOf(result)); 
+		
+	}
+	
+	public double  operateZsetScore(String key, Object value)
+	{
+		
+		
+		return  redisTemplate.opsForZSet().score(key, value);
+		
 	}
 }

@@ -50,4 +50,8 @@ public interface LeaderBoardConfigMapper {
      * @mbggenerated
      */
     int updateByPrimaryKey(LeaderBoardConfig record);
+    
+    
+  
+    LeaderBoardConfig selectByGidAndBoardId(LeaderBoardConfig record);
 }

@@ -1,13 +1,14 @@
 package com.dsky.baas.ranklist;
 
 import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.aspectj.EnableSpringConfigured;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import com.dsky.baas.ranklist.service.ILeaderBoardConfigService;
 
 
 
@@ -33,10 +34,14 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @ComponentScan(basePackages = "com.dsky.baas.ranklist")
 @MapperScan(basePackages="com.dsky.baas.ranklist.dao")
 public class RankListSpringBoot {
+	
+	
 	public static void main(String[] args) {
 		SpringApplication.run(RankListSpringBoot.class, args);
-
+		//初始化先判断redis的配置是否存在
 	}
+	
+	
 
 }
 

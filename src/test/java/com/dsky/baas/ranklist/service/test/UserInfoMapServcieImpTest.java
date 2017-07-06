@@ -5,18 +5,23 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.dsky.baas.ranklist.RankListSpringBoot;
+import com.dsky.baas.ranklist.service.impl.LeaderBoardConfigServiceImp;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
 //@ActiveProfiles(profiles = "test")
 @SpringBootTest
 @Import(RankListSpringBoot.class)
-public class SpringBootTestCase {
+public class UserInfoMapServcieImpTest {
+
+@Autowired
+private LeaderBoardConfigServiceImp leaderBoardConfigImpService;
 
 
     @Test
