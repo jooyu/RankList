@@ -1,7 +1,6 @@
 package com.dsky.baas.ranklist.controller;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,6 +19,7 @@ import com.dsky.baas.ranklist.lib.ApiResultObject;
 import com.dsky.baas.ranklist.lib.ApiResultPacker;
 import com.dsky.baas.ranklist.model.LeaderBoardConfig;
 import com.dsky.baas.ranklist.service.ILeaderBoardConfigService;
+import com.dsky.baas.ranklist.service.IRankListService;
 import com.dsky.baas.ranklist.service.IUserInfoMapService;
 import com.dsky.baas.ranklist.util.CommonUtil;
 import com.dsky.baas.ranklist.util.ObjectMapperFactory;
@@ -38,6 +38,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public class RankListController {
 	 private static final ObjectMapper objectMapper = ObjectMapperFactory.getDefaultObjectMapper();
 	private final Logger log = Logger.getLogger(RankListController.class);
+	@Autowired
+	private IRankListService iRankListService;
 	@Autowired
 	private ILeaderBoardConfigService iLeaderBoardConfigService;
 	@Autowired
@@ -90,103 +92,42 @@ public class RankListController {
 					ApiResultCode.MISS_REQUIRE_PARAM_SCORE_ID, "不能缺少游戏排行分数");
 		}
 
-		// 数据分块存储redis，最后写入，返回排序系列uid集合
-		// 步骤1.读取redis配置
-		// 步骤2.读取是否存在redis，
-		// 存在，更新数据，同时数据存储mysql
-		// 不存在，分区存储redis，同时落地mysql
-		// getRedisConfig();
-		// checkRedisKey()
-		// setRedisKey
-		// 存在 update
-		// 不存在 insert
-		//获得过期时间----------------
-		LeaderBoardConfig leaderBoardConfig=iLeaderBoardConfigService.getConfigFromRedis(gid, boardid);
-		//过期类型
-		int expireType =CommonUtil.parseInt(leaderBoardConfig.getExpireType());
-		//分区大小
-		int score_section =CommonUtil.parseInt(leaderBoardConfig.getScorePartion());
-		//TopN的n
-		int n=CommonUtil.parseInt(leaderBoardConfig.getLimitRows());
-		//计算过期时间
-		int thisNowTime=CommonUtil.getNowTimeStamp();
-		log.debug("thisNowTime");
-		log.debug(thisNowTime);
-		int expireTime;
-		expireTime=CommonUtil.expireTimeByExpireType(thisNowTime, expireType);
-		log.debug("expireTime");
-		log.debug(expireTime);
-		//获得分区
-		int storeResult=iUserInfoMapService.storeRedisScoreKey(uid, gid, boardid, score_section, score,expireTime);
-		log.debug("topScore");
-	
-		
-
-		
-		iUserInfoMapService.checkRedisCachedKey(uid, gid, boardid, score,expireType);
-		if(storeResult<0)
+		//选择排行类型
+		LeaderBoardConfig leaderBoardConfig=iLeaderBoardConfigService.getConfig(gid, boardid);
+		if(leaderBoardConfig==null)
 		{
-			return ApiResultPacker.packToApiResultObject(ApiResultCode.NORMAL_ERROR, "存储失败");
+			return ApiResultPacker.packToApiResultObject(ApiResultCode.CONFIG_NOT_EXISTS, "配置不存在");
 		}
-		//是否topN
-		//2017.2.9
-		int rdCount=0;
-		double lastScore=0.0;
-		int lastMember=0;
-		String topNKey=gid+"_"+boardid+"_topN";
-			//获得当前缓存数据的数量
-			rdCount=CommonUtil.parseInt(redisRepository.operateZsetCard(topNKey));
-			log.debug("rdCount");
-			log.debug(rdCount);
+		int limitRows=leaderBoardConfig.getLimitRows();
+		log.debug("limitRows");
+		log.debug(limitRows);
+		int scorePartion=leaderBoardConfig.getScorePartion();
+		log.debug("scorePartion");
+		log.debug(scorePartion);
 		
-			if(rdCount<=n)
-			{
-				//添加
-				log.debug("topN有序集合增加");
-				redisRepository.operateZsetAdd(topNKey,uid+"", score);
-				//设置过期时间
-				
-			}
-			else
-			{
-				//和最小的比较，如果大与等于，替换
-				Set<String> set=redisRepository.operateZsetRevrange(topNKey, -1, -1);
-				Iterator<String> it = set.iterator();  
-				while (it.hasNext()) {  
-					lastMember=CommonUtil.parseInt( it.next()); 
-				  System.out.println(lastMember);  
-				}  
- 				
-				log.debug("lastMember");
-				log.debug(lastMember);
+		if(limitRows>0 && scorePartion<0)
+		{
+			//topN
+			return ApiResultPacker.packToApiResultObject(iRankListService.topNRank(uid, gid, boardid, score, leaderBoardConfig), "");
 			
-				lastScore= redisRepository.operateZsetScore(topNKey, lastMember+""); 
-				
-				log.debug(lastScore);
-				log.debug("lastScore");
-				if(score>=lastScore)
-				{
-					log.debug("大于最小的分值，，删除替换，在落地，前面已经落地");
-					redisRepository.operateZsetRemove(topNKey, lastMember+"");
-					log.debug("删除最后一个");
-					redisRepository.operateZsetAdd(topNKey, uid+"",CommonUtil.parseInt(score) );
-					log.debug("添加新的一个");
-				}
-				else{
-					//如果小于，落地,前面已经落地
-					log.debug("小于最小的分值，落地");
-				}	
-			}
-			if(expireType!=0)
-			{
-				if(rdCount==1)
-				{
-					redisRepository.setExpire(topNKey, expireTime);
-					log.debug("topN设置过期时间");
-				}
-			}
+		}
+		else if(limitRows>0 && scorePartion>0)
+		{
+			//topN+总排
+			return ApiResultPacker.packToApiResultObject(iRankListService.topNAndTotalRank(uid, gid, boardid, score, leaderBoardConfig), "");
 			
-		return ApiResultPacker.packToApiResultObject(ApiResultCode.OK, "成功");
+		}
+		else if(limitRows<0 && scorePartion>0)
+		{
+			//总排
+			return ApiResultPacker.packToApiResultObject(iRankListService.totalRank(uid, gid, boardid, score, leaderBoardConfig), "");
+			
+		}
+		else
+		{
+			//非法
+			return ApiResultPacker.packToApiResultObject(ApiResultCode.CONFIG_IS_ILLEGL, "配置不合法");
+		}
 
 	}
 
@@ -234,7 +175,11 @@ public class RankListController {
 		// 步骤2.排序当前分值所在分段位置
 		// 步骤3.返回当前所在位置
 		//获得分区
-		LeaderBoardConfig leaderBoardConfig=iLeaderBoardConfigService.getConfigFromRedis(gid, boardid);
+		LeaderBoardConfig leaderBoardConfig=iLeaderBoardConfigService.getConfig(gid, boardid);
+		if(leaderBoardConfig==null)
+		{
+			return ApiResultPacker.packToApiResultObject(ApiResultCode.CONFIG_NOT_EXISTS, "配置不存在");
+		}
 		int score_section =
 				CommonUtil.parseInt(leaderBoardConfig.getScorePartion()
 						);// 假设获得分区 TODO

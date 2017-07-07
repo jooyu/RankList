@@ -34,7 +34,7 @@ public class LeaderBoardConfigImpServiceTest {
     
   // 	assertEquals(leaderBoardConfigImpService.getConfigFromRedis(11076,11),null);
  //   	leaderBoardConfigImpService.SetConfigToRedis(leaderBoardConfigImpService.getConfigFromMysql(11076, 11));
-    	leaderBoardConfigImpService.initLeaderBoardConfig();
+//    	leaderBoardConfigImpService.initLeaderBoardConfig();
     }
     
     

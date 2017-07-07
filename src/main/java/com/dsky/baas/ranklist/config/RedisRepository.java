@@ -550,11 +550,16 @@ public class RedisRepository {
 		
 	}
 	
-	public double  operateZsetScore(String key, Object value)
+	public Double  operateZsetScore(String key, Object value)
 	{
 		
 		
 		return  redisTemplate.opsForZSet().score(key, value);
 		
 	}
+	
+//	public int operateZsetScore()
+//	{
+//		return  redisTemplate.opsForZSet().
+//	}
 }

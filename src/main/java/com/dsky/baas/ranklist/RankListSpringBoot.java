@@ -35,14 +35,10 @@ import com.dsky.baas.ranklist.service.ILeaderBoardConfigService;
 @MapperScan(basePackages="com.dsky.baas.ranklist.dao")
 public class RankListSpringBoot {
 	
-	
 	public static void main(String[] args) {
 		SpringApplication.run(RankListSpringBoot.class, args);
 		//初始化先判断redis的配置是否存在
 	}
-	
-	
-
 }
 
 

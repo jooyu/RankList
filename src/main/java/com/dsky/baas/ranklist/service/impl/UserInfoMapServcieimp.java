@@ -167,10 +167,7 @@ public class UserInfoMapServcieImp implements IUserInfoMapService{
 			redisRepository.setExpire(newScoreKey, expireTime);
 			
 		}
-		//在存一个topN的集合
-		String topNKey=gid+"_"+boardid+"_topN";
-	//	int redisTopCount=CommonUtil.parseInt(rdsClient.zcount(topNKey,0,getTopScoreFromRedis(uid, gid, boardid)));
-		redisRepository.operateZsetAdd(topNKey, uid+"", score);
+
 		
 		return rtnResult;
 	}

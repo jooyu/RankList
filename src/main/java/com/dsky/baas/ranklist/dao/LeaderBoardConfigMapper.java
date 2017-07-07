@@ -54,4 +54,7 @@ public interface LeaderBoardConfigMapper {
     
   
     LeaderBoardConfig selectByGidAndBoardId(LeaderBoardConfig record);
+    
+    
+    LeaderBoardConfig updateByGidAndBoardId(LeaderBoardConfig record);
 }

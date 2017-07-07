@@ -42,7 +42,8 @@ public final class ApiResultCode {
 	public static final int DO_NOT_HAVE_EXCHANGE_PLAN = 5030; //无兑换方案
 	public static final int IT_IS_NOT_EXCHANGE_TIME = 5040; //今日不可提交兑换
 	
-	
+	public static final int CONFIG_NOT_EXISTS = 6010; //配置不存在
+	public static final int CONFIG_IS_ILLEGL = 6020; //配置不合法
 	private ApiResultCode(){}
 	
 	
