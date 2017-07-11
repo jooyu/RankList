@@ -12,11 +12,13 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 
 import com.alibaba.fastjson.JSON;
+
 
 
 public class CommonUtil {
@@ -312,5 +314,5 @@ public class CommonUtil {
 			return expireTime;
 
 	   }
-	
 }
+

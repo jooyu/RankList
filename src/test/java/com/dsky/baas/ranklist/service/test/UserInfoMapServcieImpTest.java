@@ -1,8 +1,6 @@
 package com.dsky.baas.ranklist.service.test;
 
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +9,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.dsky.baas.ranklist.RankListSpringBoot;
-import com.dsky.baas.ranklist.service.impl.LeaderBoardConfigServiceImp;
+import com.dsky.baas.ranklist.service.IUserInfoMapService;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -21,12 +19,12 @@ import com.dsky.baas.ranklist.service.impl.LeaderBoardConfigServiceImp;
 public class UserInfoMapServcieImpTest {
 
 @Autowired
-private LeaderBoardConfigServiceImp leaderBoardConfigImpService;
+private IUserInfoMapService iUserInfoMapService;
 
 
     @Test
     public void test1(){
-    	assertEquals(1,1);
+    	iUserInfoMapService.getUserInfo(123456, 11292, 1);
     }
     
     

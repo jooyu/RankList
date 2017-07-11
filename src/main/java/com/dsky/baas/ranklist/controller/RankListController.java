@@ -24,6 +24,7 @@ import com.dsky.baas.ranklist.service.IUserInfoMapService;
 import com.dsky.baas.ranklist.util.CommonUtil;
 import com.dsky.baas.ranklist.util.ObjectMapperFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -93,7 +94,7 @@ public class RankListController {
 		}
 
 		//选择排行类型
-		LeaderBoardConfig leaderBoardConfig=iLeaderBoardConfigService.getConfig(gid, boardid);
+		LeaderBoardConfig leaderBoardConfig=iLeaderBoardConfigService.getConfigFromRedis(gid, boardid);
 		if(leaderBoardConfig==null)
 		{
 			return ApiResultPacker.packToApiResultObject(ApiResultCode.CONFIG_NOT_EXISTS, "配置不存在");
@@ -128,6 +129,7 @@ public class RankListController {
 			//非法
 			return ApiResultPacker.packToApiResultObject(ApiResultCode.CONFIG_IS_ILLEGL, "配置不合法");
 		}
+		
 
 	}
 
@@ -175,7 +177,7 @@ public class RankListController {
 		// 步骤2.排序当前分值所在分段位置
 		// 步骤3.返回当前所在位置
 		//获得分区
-		LeaderBoardConfig leaderBoardConfig=iLeaderBoardConfigService.getConfig(gid, boardid);
+		LeaderBoardConfig leaderBoardConfig=iLeaderBoardConfigService.getConfigFromRedis(gid, boardid);
 		if(leaderBoardConfig==null)
 		{
 			return ApiResultPacker.packToApiResultObject(ApiResultCode.CONFIG_NOT_EXISTS, "配置不存在");
@@ -259,7 +261,7 @@ public class RankListController {
 		int uid;
 		int gid;
 		int boardid;
-		Map<String, Object> resData = new HashMap<String, Object>();
+	
 		try {
 			uid = CommonUtil.parseInt(cookie.get("uid"));
 			log.debug("uid");
@@ -286,43 +288,52 @@ public class RankListController {
 			return ApiResultPacker.packToApiResultObject(
 					ApiResultCode.MISS_REQUIRE_PARAM_BOARD_ID, "不能缺少游戏排行ID参数");
 		}
-		
-		//2017.2.9
-		int topScore=iUserInfoMapService.getTopScoreFromRedis(uid, gid, boardid);
-		log.debug("topScore");
-		log.debug(topScore);
-	
-
-		String Uids =null; 
-
-		
-			String topNKey=gid+"_"+boardid+"_topN";
-			log.debug("topNKey");
-			log.debug(topNKey);
-	
-			Set<String> topNResult=redisRepository.operateZsetRevrange(topNKey, 0, -1);
-			 ObjectNode node = objectMapper.createObjectNode();  
-				node.put("sort_rule",  "desc");
-			
-
-		
-			try {
-				Uids=objectMapper.writeValueAsString(topNResult);
-				node.put("uids", Uids);
-				log.debug("Uids");
-				log.debug(Uids);
-			} catch (JsonProcessingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-		resData.put("sort_rule", "desc");
-		resData.put("uids", Uids);
-		
-		
-	
-		return ApiResultPacker.packToApiResultObject(node);
+		return ApiResultPacker.packToApiResultObject(iUserInfoMapService.getUserInfo(uid, gid, boardid));
 
 	}
-
+	
+	
+	@RequestMapping("/get_topN_user")
+	public @ResponseBody ApiResultObject getUserData(HttpServletRequest req) {
+		// 通过openapi鉴权之后
+		Map<String, String> cookie = CommonUtil.parseHeaderCookie(req);
+		int pageSize = CommonUtil.parseInt(CommonUtil.pickValue(
+				req.getParameter("page_size"), 10));
+		int pageNum = CommonUtil.parseInt(CommonUtil.pickValue(
+				req.getParameter("page_number"), 1));
+		log.debug("pageSize");
+		log.debug(pageSize);
+		log.debug("pageNum");
+		log.debug(pageNum);
+		if (cookie == null) {
+			return ApiResultPacker.packToApiResultObject(
+					ApiResultCode.AUTH_FAIL, "鉴权失败");
+		}
+		log.debug("get_rank_data controller cookieMap");
+		log.debug(JSON.toJSON(cookie));
+		int uid;
+		int gid;
+		int boardid;
+		Map<String, Object> resData = new HashMap<String, Object>();
+		try {
+			uid = CommonUtil.parseInt(cookie.get("uid"));
+			log.debug("uid");
+			log.debug(uid);
+		} catch (Exception e) {
+			return ApiResultPacker.packToApiResultObject(
+					ApiResultCode.MISS_REQUIRE_PARAM_PLAYER_ID, "不能缺少玩家ID参数");
+		}
+		try {
+			gid = CommonUtil.parseInt(cookie.get("gid"));
+			log.debug("gid");
+			log.debug(gid);
+		} catch (Exception e) {
+			return ApiResultPacker.packToApiResultObject(
+					ApiResultCode.MISS_REQUIRE_PARAM_GAME_ID, "不能缺少游戏ID参数");
+		}
+		
+		
+		
+		return null;
+	}
 }

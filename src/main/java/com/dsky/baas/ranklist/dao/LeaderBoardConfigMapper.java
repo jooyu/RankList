@@ -1,5 +1,7 @@
 package com.dsky.baas.ranklist.dao;
 
+import java.util.List;
+
 import com.dsky.baas.ranklist.model.LeaderBoardConfig;
 
 public interface LeaderBoardConfigMapper {
@@ -57,4 +59,6 @@ public interface LeaderBoardConfigMapper {
     
     
     LeaderBoardConfig updateByGidAndBoardId(LeaderBoardConfig record);
+
+	List<LeaderBoardConfig> selectAllLeaderBoardConfig();
 }

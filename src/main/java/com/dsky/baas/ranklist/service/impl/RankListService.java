@@ -18,8 +18,7 @@ import com.dsky.baas.ranklist.util.CommonUtil;
 @Service
 public class RankListService implements IRankListService {
 	private final Logger log = Logger.getLogger(RankListService.class);
-	@Autowired
-	private ILeaderBoardConfigService iLeaderBoardConfigService;
+
 	@Autowired
 	private IUserInfoMapService iUserInfoMapService;
 	@Autowired
