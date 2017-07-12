@@ -2,6 +2,8 @@ package com.dsky.baas.ranklist.service;
 
 import java.util.Set;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.dsky.baas.ranklist.model.UserInfoMap;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -28,8 +30,8 @@ public interface IUserInfoMapService{
 
 	public int getScoreByUidAndBoardid(int uid,int gid,int boardid);
 	
-	public JsonNode getUserID(int uid,int gid,int boardid);
+	public ObjectNode getUserID(int uid,int gid,int boardid);
 	
-	public JsonNode getUserInfo(int uid,int gid,int boardid);
+	public JSONArray getUserInfo(int uid,int gid,int boardid);
 	
 }

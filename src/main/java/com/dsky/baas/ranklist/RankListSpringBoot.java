@@ -1,14 +1,21 @@
 package com.dsky.baas.ranklist;
 
 import org.mybatis.spring.annotation.MapperScan;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.aspectj.EnableSpringConfigured;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import com.dsky.baas.ranklist.service.ILeaderBoardConfigService;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 
@@ -27,7 +34,7 @@ import com.dsky.baas.ranklist.service.ILeaderBoardConfigService;
  * @author eaves.zhu
  * 
  */
-
+@EnableCaching  //ehcache
 @EnableSpringConfigured
 @EnableTransactionManagement // 启注解事务管理，等同于xml配置方式的 <tx:annotation-driven />
 @SpringBootApplication
@@ -38,6 +45,7 @@ public class RankListSpringBoot {
 		SpringApplication.run(RankListSpringBoot.class, args);
 		//初始化先判断redis的配置是否存在
 	}
+ 
 }
 
 

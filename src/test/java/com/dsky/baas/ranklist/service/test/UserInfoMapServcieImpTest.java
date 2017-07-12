@@ -24,7 +24,9 @@ private IUserInfoMapService iUserInfoMapService;
 
     @Test
     public void test1(){
-    	iUserInfoMapService.getUserInfo(123456, 11292, 1);
+//    	iUserInfoMapService.getUserInfo(123456, 11292, 1);
+//    	System.out.println(iUserInfoMapService.getUserID(123456, 11292, 1));
+    	System.out.println(iUserInfoMapService.getUserInfo(123456, 11292, 1));
     }
     
     

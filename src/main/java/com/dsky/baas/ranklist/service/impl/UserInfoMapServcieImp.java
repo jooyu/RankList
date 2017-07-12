@@ -26,21 +26,31 @@ import org.apache.http.protocol.HttpContext;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.dsky.baas.ranklist.config.RedisRepository;
 import com.dsky.baas.ranklist.dao.UserInfoMapMapper;
 import com.dsky.baas.ranklist.model.UserInfoMap;
 import com.dsky.baas.ranklist.service.IUserInfoMapService;
 import com.dsky.baas.ranklist.util.CommonUtil;
 import com.dsky.baas.ranklist.util.ObjectMapperFactory;
+import com.dsky.baas.ranklist.util.ObjectUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 
 @Service("userInfoMapServcie")
+
+@CacheConfig(cacheNames="userInfoCache")
 public class UserInfoMapServcieImp implements IUserInfoMapService{
 	 private static final ObjectMapper objectMapper = ObjectMapperFactory.getDefaultObjectMapper();
 	private final Logger log = Logger.getLogger(UserInfoMapServcieImp.class);
@@ -231,7 +241,7 @@ public class UserInfoMapServcieImp implements IUserInfoMapService{
 	}
 
 	@Override
-	public JsonNode getUserID(int uid, int gid, int boardid) {
+	public ObjectNode getUserID(int uid, int gid, int boardid) {
 		//2017.2.9
 				int topScore=getTopScoreFromRedis(uid, gid, boardid);
 				log.debug("topScore");
@@ -251,64 +261,60 @@ public class UserInfoMapServcieImp implements IUserInfoMapService{
 					
 
 				
-					try {
-						Uids=objectMapper.writeValueAsString(topNResult);
+			
+						Uids=JSON.toJSONString(topNResult);
 						node.put("uids", Uids);
 						log.debug("Uids");
 						log.debug(Uids);
-					} catch (JsonProcessingException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+			
 
 		return node;
 	}
 
 	@Override
-	//cache缓存
-	public JsonNode getUserInfo(int uid, int gid, int boardid) {
-	ObjectNode userInfo=objectMapper.createObjectNode();  
-	String topNKey=gid+"_"+boardid+"_topN";
-//	CookieStore cookieStore = new BasicCookieStore();//new BasicCookieStore();
-//	cookieStore.addCookie(new BasicClientCookie("Cookie", "uid="+uid+";"+"gid="+gid));
-//	
-//	log.debug("cookieStore");
-//	log.debug(cookieStore.toString());
-//	HttpContext localContext = new BasicHttpContext();
-//	localContext.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
-	Set<String> topNResult=redisRepository.operateZsetRevrange(topNKey, 0, -1);
-		for (String user : topNResult) {
+//	@Cacheable
+	public JSONArray getUserInfo(int uid, int gid, int boardid) {
+//		ObjectNode userText=objectMapper.createObjectNode();
+		JSONArray userText=new JSONArray();
+//		JsonNode topNResult=  getUserID(uid,gid,boardid).get("uids");
+	
+		String topNKey=gid+"_"+boardid+"_topN";
+	
+		Set<String> topNResult=redisRepository.operateZsetRevrange(topNKey, 0, -1);
+		Set<String>  userInfoTotal=topNResult;
+		try {
+			for (String user : userInfoTotal) {
+				System.out.println(user);
 			HttpClient client = new DefaultHttpClient();
 			StringBuilder sb=new StringBuilder(kvUrlGet);
-			sb.append("?key=").append("uid_").append(user);
-			log.debug("url");
-			log.debug(sb);
+			sb.append("?key=").append("user").append(user);
+			System.out.println("url");
+			System.out.println(sb);
 			//发出请求
-			HttpGet httpRequest = new HttpGet(kvUrlGet);
+			HttpGet httpRequest = new HttpGet(sb.toString());
 			HttpResponse response;
 			httpRequest.setHeader("Cookie", "uid="+uid+";"+"gid="+gid);
-			try {
-				
 				response = client.execute(httpRequest);
 				String returnedString = new String(readEntity(response.getEntity()).getBytes("UTF-8"), "UTF-8");
 				log.info("result =="+returnedString);
-				ObjectMapper mapper = new ObjectMapper();
-				JsonNode resultObject = mapper.readTree(returnedString);
+				JSONObject jj=JSON.parseObject(returnedString);
+//				JsonNode resultObject = objectMapper.readTree(returnedString);
 				
-				userInfo.put(user, resultObject.get("data"));
-			} catch (IOException e) {
 				
-				e.printStackTrace();
-			}	
-		}
-		//读取kv系统的userinfo
+				String value=JSON.parseObject(jj.getString("data")).getString("val");
+				System.out.println("####  "+value);
+				userText.add(JSON.toJSONString(value));
+				
 		
-		userInfo.put("ttl", "5分钟");
-		userInfo.put("sort_rule","desc");
+		}
 	
+		
+		} catch (IOException e) {
 			
-	
-		return userInfo;
+			e.printStackTrace();
+		}	
+
+		return userText;
 	}
 
 	private String readEntity(HttpEntity entity) {

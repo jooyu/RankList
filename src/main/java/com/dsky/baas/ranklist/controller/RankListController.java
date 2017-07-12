@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.dsky.baas.ranklist.config.RedisRepository;
 import com.dsky.baas.ranklist.lib.ApiResultCode;
 import com.dsky.baas.ranklist.lib.ApiResultObject;
@@ -23,6 +25,7 @@ import com.dsky.baas.ranklist.service.IRankListService;
 import com.dsky.baas.ranklist.service.IUserInfoMapService;
 import com.dsky.baas.ranklist.util.CommonUtil;
 import com.dsky.baas.ranklist.util.ObjectMapperFactory;
+import com.dsky.baas.ranklist.util.ObjectUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -244,14 +247,14 @@ public class RankListController {
 	public @ResponseBody ApiResultObject getRankData(HttpServletRequest req) {
 		// 通过openapi鉴权之后
 		Map<String, String> cookie = CommonUtil.parseHeaderCookie(req);
-		int pageSize = CommonUtil.parseInt(CommonUtil.pickValue(
-				req.getParameter("page_size"), 10));
-		int pageNum = CommonUtil.parseInt(CommonUtil.pickValue(
-				req.getParameter("page_number"), 1));
-		log.debug("pageSize");
-		log.debug(pageSize);
-		log.debug("pageNum");
-		log.debug(pageNum);
+//		int pageSize = CommonUtil.parseInt(CommonUtil.pickValue(
+//				req.getParameter("page_size"), 10));
+//		int pageNum = CommonUtil.parseInt(CommonUtil.pickValue(
+//				req.getParameter("page_number"), 1));
+//		log.debug("pageSize");
+//		log.debug(pageSize);
+//		log.debug("pageNum");
+//		log.debug(pageNum);
 		if (cookie == null) {
 			return ApiResultPacker.packToApiResultObject(
 					ApiResultCode.AUTH_FAIL, "鉴权失败");
@@ -288,23 +291,23 @@ public class RankListController {
 			return ApiResultPacker.packToApiResultObject(
 					ApiResultCode.MISS_REQUIRE_PARAM_BOARD_ID, "不能缺少游戏排行ID参数");
 		}
-		return ApiResultPacker.packToApiResultObject(iUserInfoMapService.getUserInfo(uid, gid, boardid));
+		return ApiResultPacker.packToApiResultObject(iUserInfoMapService.getUserID(uid, gid, boardid));
 
 	}
 	
 	
-	@RequestMapping("/get_topN_user")
+	@RequestMapping("/get_topN_users")
 	public @ResponseBody ApiResultObject getUserData(HttpServletRequest req) {
 		// 通过openapi鉴权之后
 		Map<String, String> cookie = CommonUtil.parseHeaderCookie(req);
-		int pageSize = CommonUtil.parseInt(CommonUtil.pickValue(
-				req.getParameter("page_size"), 10));
-		int pageNum = CommonUtil.parseInt(CommonUtil.pickValue(
-				req.getParameter("page_number"), 1));
-		log.debug("pageSize");
-		log.debug(pageSize);
-		log.debug("pageNum");
-		log.debug(pageNum);
+//		int pageSize = CommonUtil.parseInt(CommonUtil.pickValue(
+//				req.getParameter("page_size"), 10));
+//		int pageNum = CommonUtil.parseInt(CommonUtil.pickValue(
+//				req.getParameter("page_number"), 1));
+//		log.debug("pageSize");
+//		log.debug(pageSize);
+//		log.debug("pageNum");
+//		log.debug(pageNum);
 		if (cookie == null) {
 			return ApiResultPacker.packToApiResultObject(
 					ApiResultCode.AUTH_FAIL, "鉴权失败");
@@ -331,9 +334,20 @@ public class RankListController {
 			return ApiResultPacker.packToApiResultObject(
 					ApiResultCode.MISS_REQUIRE_PARAM_GAME_ID, "不能缺少游戏ID参数");
 		}
+
+				boardid = CommonUtil.parseInt(req.getParameter("boardid"));
+				log.debug("boardid");
+				log.debug(boardid);
+				if (boardid <= 0) {
+					return ApiResultPacker.packToApiResultObject(
+							ApiResultCode.MISS_REQUIRE_PARAM_BOARD_ID, "不能缺少游戏排行ID参数");
+				}
 		
-		
-		
-		return null;
+				 ObjectNode node = objectMapper.createObjectNode();  
+				 JSONArray jn=iUserInfoMapService.getUserInfo(uid, gid, boardid);
+				
+				 node.put("uid", JSONObject.toJSONString(jn));
+				
+				return ApiResultPacker.packToApiResultObject(node);
 	}
 }

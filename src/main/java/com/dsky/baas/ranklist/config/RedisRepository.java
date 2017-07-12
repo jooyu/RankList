@@ -14,6 +14,7 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.stereotype.Component;
 
@@ -43,6 +44,7 @@ public class RedisRepository {
 
     public RedisRepository(RedisTemplate<String, String> redisTemplate) {
         this.redisTemplate = redisTemplate;
+        this.redisTemplate.setDefaultSerializer(new GenericJackson2JsonRedisSerializer());
     }
     
     
@@ -558,8 +560,5 @@ public class RedisRepository {
 		
 	}
 	
-//	public int operateZsetScore()
-//	{
-//		return  redisTemplate.opsForZSet().
-//	}
+
 }
